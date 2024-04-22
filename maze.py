@@ -6,16 +6,22 @@ from pygame import *
 #mixer.music.load('jungles.ogg')
 #mixer.music.play()
 #mixer.music.set_volume(0.2)
-WIDTH, HEIGHT = 900, 700
+MAP_WIDTH, MAP_HEIGHT =25, 20
+TILESIZE = 35
+
+WIDTH, HEIGHT = MAP_WIDTH*TILESIZE, MAP_HEIGHT*TILESIZE
+
 window  = display.set_mode((WIDTH,HEIGHT))
 FPS = 60
 clock = time.Clock()
 
 bg = image.load('background.jpg')
 bg = transform.scale(bg, (WIDTH,HEIGHT))
-player_img = image.load("hero.png")
 
+player_img = image.load("hero.png")
+wall_img = image.load("wall.png")
 all_sprites = sprite.Group()
+treasure_img = image.load("treasure.png")
 class Sprite(sprite.Sprite):
     def __init__(self, sprite_img, width, height, x , y ):
         super().__init__()
@@ -24,6 +30,7 @@ class Sprite(sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         all_sprites.add(self)
+
 class Player(Sprite):
     def __init__(self, sprite_img, width, height, x, y):
         super().__init__(sprite_img, width, height, x, y)
@@ -38,10 +45,32 @@ class Player(Sprite):
             self.rect.y += self.speed
         if key_pressed[K_a] and self.rect.x > 0:
             self.rect.x -= self.speed
-        if key_pressed[K_d] and self.rect.right > 0:
+        if key_pressed[K_d] and self.rect.right < WIDTH:
             self.rect.x += self.speed
 
-player = Player(player_img,70, 70, 300, 300)
+player = Player(player_img,30, 30, 300, 300)
+walls = sprite.Group()
+
+with open("map.txt", "r") as f:
+    map = f.readlines()
+    x = 0
+    y = 0
+    for line in map:
+        for symbol in line:
+            if symbol == "w":
+                walls.add(Sprite(wall_img, TILESIZE, TILESIZE, x, y))
+            if symbol == "p":
+                player.rect.x = x
+                player.rect.y = y
+            if symbol == "t":
+                treasure = Sprite(treasure_img, 30 ,30, x, y)
+            x +=TILESIZE
+        y +=TILESIZE
+        x = 0        
+
+
+
+
 
 run = True
 
