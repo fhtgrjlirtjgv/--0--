@@ -1,7 +1,11 @@
+from random import choice
 from typing import Any
 from pygame import *
 
 #init()
+font.init()
+font1 = font.SysFont("impact", 150, )
+game_over_text = font1.render("GAME_OVER", True, (150, 0, 0))
 #mixer.init()
 #mixer.music.load('jungles.ogg')
 #mixer.music.play()
@@ -22,6 +26,7 @@ player_img = image.load("hero.png")
 wall_img = image.load("wall.png")
 all_sprites = sprite.Group()
 treasure_img = image.load("treasure.png")
+cyborg_img = image.load("cyborg.png")
 class Sprite(sprite.Sprite):
     def __init__(self, sprite_img, width, height, x , y ):
         super().__init__()
@@ -29,6 +34,7 @@ class Sprite(sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.mask = mask.from_surface(self.image)
         all_sprites.add(self)
 
 class Player(Sprite):
@@ -38,6 +44,7 @@ class Player(Sprite):
         self.speed = 4
 
     def update(self):
+        old_pos = self.rect.x, self.rect.y
         key_pressed = key.get_pressed()
         if key_pressed[K_w] and self.rect.y > 0:
             self.rect.y -= self.speed 
@@ -48,8 +55,45 @@ class Player(Sprite):
         if key_pressed[K_d] and self.rect.right < WIDTH:
             self.rect.x += self.speed
 
+        collide_list = sprite.spritecollide(self, walls, False, sprite.collide_mask)
+        if len(collide_list) > 0:
+            self.rect.x, self.rect.y = old_pos
+            
+        enemy_collide = sprite.spritecollide(self, enemys, False, sprite.collide_mask)
+        if len(enemy_collide) > 0:
+            self.hp -= 100
+
+
+
+class Enemy(Sprite):
+    def __init__(self, sprite_img, width, height, x, y):
+        super().__init__(sprite_img, width, height, x, y)
+        self.damage = 100
+        self.speed = 5
+        self.dir_list = ('right', 'left', 'up', 'down')
+        self.dir = choice(self.dir_list)
+
+    def update(self):
+        old_pos = self.rect.x, self.rect.y
+        if self.dir == "right":
+            self.rect.x +=self.speed
+        if self.dir == "left":
+            self.rect.x -=self.speed
+        if self.dir == "up":
+            self.rect.y -=self.speed
+        if self.dir == "down":
+            self.rect.y +=self.speed
+
+        collide_list = sprite.spritecollide(self, walls, False, sprite.collide_mask)
+        if len(collide_list) > 0:
+            self.rect.x, self.rect.y = old_pos
+            self.dir = choice(self.dir_list)
+
+
 player = Player(player_img,30, 30, 300, 300)
 walls = sprite.Group()
+enemys = sprite.Group()
+
 
 with open("map.txt", "r") as f:
     map = f.readlines()
@@ -64,6 +108,8 @@ with open("map.txt", "r") as f:
                 player.rect.y = y
             if symbol == "t":
                 treasure = Sprite(treasure_img, 30 ,30, x, y)
+            if symbol == "e":
+                enemys.add(Enemy(cyborg_img, TILESIZE-5, TILESIZE-5, x, y))
             x +=TILESIZE
         y +=TILESIZE
         x = 0        
@@ -73,13 +119,26 @@ with open("map.txt", "r") as f:
 
 
 run = True
+finish = False
+
 
 while run:
     for e in event.get():
         if e.type == QUIT:
             run = False
     window.blit(bg,(0,0))
+        
+    if sprite.collide_mask(player, treasure):
+        finish = True
+
+        game_over_text = font1.render("YOU WIN!!!", True, (0, 150, 0))
+
+    if player.hp <= 0:
+        finish = True
     all_sprites.draw(window)
-    all_sprites.update()
+    if not finish:
+        all_sprites.update()
+    if finish:
+        window.blit(game_over_text, (75, 250))
     display.update()
     clock.tick(FPS)
