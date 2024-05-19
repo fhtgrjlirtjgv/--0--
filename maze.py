@@ -2,14 +2,14 @@ from random import choice
 from typing import Any
 from pygame import *
 
-#init()
+init()
 font.init()
 font1 = font.SysFont("impact", 150, )
 game_over_text = font1.render("GAME_OVER", True, (150, 0, 0))
-#mixer.init()
-#mixer.music.load('jungles.ogg')
-#mixer.music.play()
-#mixer.music.set_volume(0.2)
+mixer.init()
+mixer.music.load('energystorm.mp3')
+mixer.music.play()
+mixer.music.set_volume(0.2)
 MAP_WIDTH, MAP_HEIGHT =25, 20
 TILESIZE = 35
 
@@ -19,14 +19,14 @@ window  = display.set_mode((WIDTH,HEIGHT))
 FPS = 60
 clock = time.Clock()
 
-bg = image.load('background.jpg')
+bg = image.load('parallax-mountain-animX1.gif')
 bg = transform.scale(bg, (WIDTH,HEIGHT))
 
 player_img = image.load("hero.png")
 wall_img = image.load("wall.png")
 all_sprites = sprite.Group()
 treasure_img = image.load("treasure.png")
-cyborg_img = image.load("cyborg.png")
+ghost_img = image.load("ghost-x4.gif")
 class Sprite(sprite.Sprite):
     def __init__(self, sprite_img, width, height, x , y ):
         super().__init__()
@@ -109,7 +109,7 @@ with open("map.txt", "r") as f:
             if symbol == "t":
                 treasure = Sprite(treasure_img, 30 ,30, x, y)
             if symbol == "e":
-                enemys.add(Enemy(cyborg_img, TILESIZE-5, TILESIZE-5, x, y))
+                enemys.add(Enemy(ghost_img, TILESIZE-5, TILESIZE-5, x, y))
             x +=TILESIZE
         y +=TILESIZE
         x = 0        
