@@ -34,6 +34,8 @@ class Sprite(sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.leftimage = self.image
+        self.rightimage = transform.flip(self.image,True,False)
         self.mask = mask.from_surface(self.image)
         all_sprites.add(self)
 
@@ -51,8 +53,10 @@ class Player(Sprite):
         if key_pressed[K_s] and self.rect.bottom < HEIGHT:
             self.rect.y += self.speed
         if key_pressed[K_a] and self.rect.x > 0:
+            self.image = self.rightimage
             self.rect.x -= self.speed
         if key_pressed[K_d] and self.rect.right < WIDTH:
+            self.image = self.leftimage
             self.rect.x += self.speed
 
         collide_list = sprite.spritecollide(self, walls, False, sprite.collide_mask)
@@ -70,6 +74,8 @@ class Enemy(Sprite):
         super().__init__(sprite_img, width, height, x, y)
         self.damage = 100
         self.speed = 5
+        self.leftimage = self.image
+        self.rightimage = transform.flip(self.image,True,False)
         self.dir_list = ('right', 'left', 'up', 'down')
         self.dir = choice(self.dir_list)
 
@@ -77,8 +83,10 @@ class Enemy(Sprite):
         old_pos = self.rect.x, self.rect.y
         if self.dir == "right":
             self.rect.x +=self.speed
+            self.image = self.leftimage
         if self.dir == "left":
             self.rect.x -=self.speed
+            self.image = self.rightimage
         if self.dir == "up":
             self.rect.y -=self.speed
         if self.dir == "down":
